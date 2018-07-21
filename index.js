@@ -5,14 +5,6 @@ const Discord = require("discord.js");
 
 const bot = new Discord.Client();
 
-let ID_channel_messageToTrack = "414617785415630855";
-let ID_message_toTrack = "446409003136712726";
-let ID_guild = "299298454457548801";
-let ID_role_1 = "446783613439311882";
-let ID_role_2 = "446783667084197910";
-let reaction_1 = "🤔"; //Thinking (default Discord) Emoji
-let reaction_2 = "b26:441046394493599764"; //Custom Emoji - use name:ID format only
-
 bot.login(require("./token.json"))
 	.then(() => {
 		console.log(`Logged in as ${bot.user.tag}`);
