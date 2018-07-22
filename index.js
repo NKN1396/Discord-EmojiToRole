@@ -7,10 +7,10 @@ const config = require("./config.json");
 var load = require("./src/load");
 load(bot, config);
 
-/*
+
 var track = require("./src/track");
 track(bot, config);
-*/
+
 
 bot.login(require("./token.json"))
 	.then(() => {
