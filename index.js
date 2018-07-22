@@ -13,4 +13,7 @@ track(bot, config);
 bot.login(require("./token.json"))
 	.then(() => {
 		console.log(`Logged in as ${bot.user.tag}`);
+	})
+	.catch(error => {
+		console.error(error);
 	});

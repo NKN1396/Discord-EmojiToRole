@@ -40,7 +40,10 @@ module.exports = function(client, config) {
 					await member.addRoles(rolesToAdd.filter((role) =>
 						//Only add roles that the member does not yet have
 						(!member.roles.get(role))
-					));
+					))
+						.catch(error => {
+							console.error(error);
+						});
 					//Check to see if roles are handled mutually eclusive
 					if (!bundle.disjoint) continue;
 					//Make sure none of the roles on the "add" list get removed again
@@ -49,8 +52,14 @@ module.exports = function(client, config) {
 						(member.roles.get(role)) &&
 						//Role about to be removed is not on the whitelist
 						(!rolesToAdd.includes(role))
-					));
-					await messageReaction.remove(user);
+					))
+						.catch(error => {
+							console.error(error);
+						});
+					await messageReaction.remove(user)
+						.catch(error => {
+							console.error(error);
+						});
 					//Don't use this, or otherwise there will only be a single message per channel.
 					//break;
 				}
@@ -84,7 +93,10 @@ module.exports = function(client, config) {
 						//Make sure member actually has role
 						(member.roles.get(role))
 					);
-					await member.removeRoles(rolesToRemove);
+					await member.removeRoles(rolesToRemove)
+						.catch(error => {
+							console.error(error);
+						});
 				}
 			})();
 		});
