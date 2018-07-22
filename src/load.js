@@ -1,13 +1,13 @@
 /**
  * Fixes possible errors in emoji strings by matching them to a pattern.
  * @param {String} emojiDiscriminator The string from the config file.
- * @returns {String} A proper emojiDiscriminator or null.
+ * @returns {*} A proper emojiDiscriminator or null.
  */
 function cleanEmojiDiscriminator(emojiDiscriminator){
 	var regEx = /[A-Za-z0-9_]+:[0-9]+/;
 	var cleaned = regEx.exec(emojiDiscriminator);
 	if(cleaned)	return cleaned[0];
-	return null;
+	return emojiDiscriminator;
 }
 
 /**
