@@ -3,10 +3,10 @@
  * @param {String} emojiDiscriminator The string from the config file.
  * @returns {*} A proper emojiDiscriminator or null.
  */
-function cleanEmojiDiscriminator(emojiDiscriminator){
+function cleanEmojiDiscriminator(emojiDiscriminator) {
 	var regEx = /[A-Za-z0-9_]+:[0-9]+/;
 	var cleaned = regEx.exec(emojiDiscriminator);
-	if(cleaned)	return cleaned[0];
+	if (cleaned) return cleaned[0];
 	return emojiDiscriminator;
 }
 
@@ -15,7 +15,7 @@ function cleanEmojiDiscriminator(emojiDiscriminator){
  * @param {*} client The bot client.
  * @param {*} config The config file.
  */
-module.exports = function(client, config){
+module.exports = function(client, config) {
 	client
 		.on("ready", () => {
 			//Bot ready
@@ -24,19 +24,18 @@ module.exports = function(client, config){
 			(async () => {
 				var debug_count_messagesFetched = 0;
 				console.log("ASYNC IIFE working!");
-				for(var bundle of config){
+				for (var bundle of config) {
 					var message = await client.channels.get(bundle.channel).fetchMessage(bundle.message);
-					if(!message) continue;
+					if (!message) continue;
 					debug_count_messagesFetched += 1;
-					for(var reaction of bundle.reactions){
+					for (var reaction of bundle.reactions) {
 						reaction.emoji = cleanEmojiDiscriminator(reaction.emoji);
 						var messageReaction = message.reactions.get(reaction.emoji);
-						if(!messageReaction){
+						if (!messageReaction) {
 							await message.react(reaction.emoji);
 							//No fetch necessary since no prior existing reactions.
-						}
-						else{
-							if(!messageReaction.me){
+						} else {
+							if (!messageReaction.me) {
 								//Fetch each reaction into cache to keep track of them
 								messageReaction.fetchUsers();
 								await message.react(reaction.emoji);
