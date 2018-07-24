@@ -17,35 +17,34 @@ function getEmojiDiscriminator(emoji) {
  * @param {*} config The config file.
  */
 module.exports = function(client, config) {
-	/* eslint-disable no-multiple-empty-lines*/
+	
 	client
+
 		.on("messageReactionAdd", (messageReaction, user) => {
 			//Bot should not react to its own reactions
 			if (user == client.user) return;
 			var member = messageReaction.message.guild.members.get(user.id);
 			var emojiDiscriminator = getEmojiDiscriminator(messageReaction.emoji);
 			(async () => {
-				for (var bundle of config) {
-					if (bundle.channel != messageReaction.message.channel.id) continue;
+				for (var { channel, reactions, disjoint } of config) {
+					if (channel != messageReaction.message.channel.id) continue;
 					var rolesToAdd = [];
 					var rolesToRemove = [];
-					for (var reaction of bundle.reactions) {
-						if (emojiDiscriminator == reaction.emoji) {
-							rolesToAdd.push.apply(rolesToAdd, reaction.roles); //Prototyping the push function, might be buggy
-						} else if (bundle.disjoint) {
+					for (var { emoji, roles } of reactions) {
+						if (emojiDiscriminator == emoji) {
+							rolesToAdd.push.apply(rolesToAdd, roles); //Prototyping the push function, might be buggy
+						} else if (disjoint) {
 							//Roles shall be handled mutually exclusive
-							rolesToRemove.push.apply(rolesToRemove, reaction.roles);
+							rolesToRemove.push.apply(rolesToRemove, roles);
 						}
 					}
 					await member.addRoles(rolesToAdd.filter((role) =>
 						//Only add roles that the member does not yet have
 						(!member.roles.get(role))
 					))
-						.catch(error => {
-							console.error(error);
-						});
+						.catch(error => console.error(error));
 					//Check to see if roles are handled mutually eclusive
-					if (!bundle.disjoint) continue;
+					if (!disjoint) continue;
 					//Make sure none of the roles on the "add" list get removed again
 					await member.removeRoles(rolesToRemove.filter((role) =>
 						//Member already has role that is about to be removed
@@ -53,38 +52,34 @@ module.exports = function(client, config) {
 						//Role about to be removed is not on the whitelist
 						(!rolesToAdd.includes(role))
 					))
-						.catch(error => {
-							console.error(error);
-						});
+						.catch(error => console.error(error));
 					await messageReaction.remove(user)
-						.catch(error => {
-							console.error(error);
-						});
+						.catch(error => console.error(error));
 					//Don't use this, or otherwise there will only be a single message per channel.
 					//break;
 				}
 			})();
 		})
+
 		.on("messageReactionRemove", (messageReaction, user) => {
 			//Bot should not react to its own reactions.
 			if (user == client.user) return;
 			var member = messageReaction.message.guild.members.get(user.id);
 			var emojiDiscriminator = getEmojiDiscriminator(messageReaction.emoji);
-
 			(async () => {
-				for (var bundle of config) {
+				for (var { disjoint, channel, reactions } of config) {
 					//Make sure we're not in "disjoint" mode
-					if (bundle.disjoint) continue;
-					if (bundle.channel != messageReaction.message.channel.id) continue;
+					if (disjoint) continue;
+					if (channel != messageReaction.message.channel.id) continue;
 					var rolesToKeep = [];
 					var rolesToRemove = [];
-					for (var reaction of bundle.reactions) {
-						if (emojiDiscriminator == reaction.emoji) {
+					for (var { emoji, roles } of reactions) {
+						if (emojiDiscriminator == emoji) {
 							//Add to removal list
-							rolesToRemove.push.apply(rolesToRemove, reaction.roles);
+							rolesToRemove.push.apply(rolesToRemove, roles);
 						} else {
 							//List of all other roles that should be kept
-							rolesToKeep.push.apply(rolesToKeep, reaction.roles);
+							rolesToKeep.push.apply(rolesToKeep, roles);
 						}
 					}
 					rolesToRemove.filter((role) =>
@@ -94,10 +89,9 @@ module.exports = function(client, config) {
 						(member.roles.get(role))
 					);
 					await member.removeRoles(rolesToRemove)
-						.catch(error => {
-							console.error(error);
-						});
+						.catch(error => console.error(error));
 				}
 			})();
 		});
+
 };

@@ -16,6 +16,7 @@ function cleanEmojiDiscriminator(emojiDiscriminator) {
  * @param {*} config The config file.
  */
 module.exports = function(client, config) {
+	
 	client
 		.on("ready", () => {
 			//Bot ready
@@ -24,30 +25,24 @@ module.exports = function(client, config) {
 			(async () => {
 				var debug_count_messagesFetched = 0;
 				console.log("ASYNC IIFE working!");
-				for (var bundle of config) {
-					var message = await client.channels.get(bundle.channel).fetchMessage(bundle.message)
-						.catch(error => {
-							console.error(error);
-						});
+				for (var { channel, message: message_id, reactions } of config) {
+					var message = await client.channels.get(channel).fetchMessage(message_id)
+						.catch(error => console.error(error));
 					if (!message) continue;
 					debug_count_messagesFetched += 1;
-					for (var reaction of bundle.reactions) {
-						reaction.emoji = cleanEmojiDiscriminator(reaction.emoji);
-						var messageReaction = message.reactions.get(reaction.emoji);
+					for (var {emoji} of reactions) {
+						emoji = cleanEmojiDiscriminator(emoji);
+						var messageReaction = message.reactions.get(emoji);
 						if (!messageReaction) {
-							await message.react(reaction.emoji)
-								.catch(error => {
-									console.error(error);
-								});
+							await message.react(emoji)
+								.catch(error => console.error(error));
 							//No fetch necessary since no prior existing reactions.
 						} else {
 							if (!messageReaction.me) {
 								//Fetch each reaction into cache to keep track of them
 								messageReaction.fetchUsers();
-								await message.react(reaction.emoji)
-									.catch(error => {
-										console.error(error);
-									});
+								await message.react(emoji)
+									.catch(error => console.error(error));
 							}
 						}
 					}
