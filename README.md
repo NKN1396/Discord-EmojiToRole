@@ -1,7 +1,7 @@
 # EmojiToRole
 A discord.js bot that assigns roles based on reactions to a message.
 ## Features
-This bot offers two different modes of operation:
+This bot offers two different modes of operation. The mode can be set independently for every message:
 1. mutually exclusive (disjoint)
 1. independent
 ### Disjoint
