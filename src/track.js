@@ -28,35 +28,31 @@ module.exports = function(client, config) {
 			(async () => {
 				for (var { channel, reactions, disjoint } of config) {
 					if (channel != messageReaction.message.channel.id) continue;
-					var rolesToAdd = [];
-					var rolesToRemove = [];
+					var rolesNew = [];
+					for(var role of member.roles.keys()){
+						rolesNew.push(role);
+					}
+					var rolesWhitelist = [];
+					var rolesBlacklist = [];
 					for (var { emoji, roles } of reactions) {
 						if (emojiDiscriminator == emoji) {
-							rolesToAdd.push.apply(rolesToAdd, roles); //Prototyping the push function, might be buggy
-						} else if (disjoint) {
-							//Roles shall be handled mutually exclusive
-							rolesToRemove.push.apply(rolesToRemove, roles);
+							rolesWhitelist.push.apply(rolesWhitelist, roles); //Prototyping the push function, might be buggy
 						}
+						rolesBlacklist.push.apply(rolesBlacklist, roles);
 					}
-					await member.addRoles(rolesToAdd.filter((role) =>
-						//Only add roles that the member does not yet have
-						(!member.roles.get(role))
-					))
-						.catch(error => console.error(error));
 					//Check to see if roles are handled mutually eclusive
-					if (!disjoint) continue;
+					if (disjoint) {
+						rolesNew = rolesNew.filter((role) =>
+							//Remove role if found on watchlist
+							(!rolesBlacklist.includes(role))
+						);
+					}
+					rolesNew.push.apply(rolesNew, rolesWhitelist);
 					//Make sure none of the roles on the "add" list get removed again
-					await member.removeRoles(rolesToRemove.filter((role) =>
-						//Member already has role that is about to be removed
-						(member.roles.get(role)) &&
-						//Role about to be removed is not on the whitelist
-						(!rolesToAdd.includes(role))
-					))
+					await member.setRoles(rolesNew)
 						.catch(error => console.error(error));
-					await messageReaction.remove(user)
+					if (disjoint) await messageReaction.remove(user)
 						.catch(error => console.error(error));
-					//Don't use this, or otherwise there will only be a single message per channel.
-					//break;
 				}
 			})();
 		})
