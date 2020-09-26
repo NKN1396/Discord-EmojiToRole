@@ -17,9 +17,7 @@ function getEmojiDiscriminator(emoji) {
  * @param {*} config The config file.
  */
 module.exports = function(client, config) {
-	
 	client
-
 		.on("messageReactionAdd", (messageReaction, user) => {
 			//Bot should not react to its own reactions
 			if (user == client.user) return;
