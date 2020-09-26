@@ -1,19 +1,21 @@
-var Discord = require("discord.js");
+import { Client } from "discord.js"
 
-var bot = new Discord.Client();
+const bot = new Client()
 
-const config = require("./config.json");
+import config from "./config.json"
 
-var load = require("./src/load");
-load(bot, config);
+//Fetch messages that need to be tracked and cache them.
+import fetchMessages from "./src/load"
+fetchMessages(bot, config)
 
-var track = require("./src/track");
-track(bot, config);
+//Start tracking messages by hooking an event listener to them
+import track from "./src/track"
+track(bot, config)
 
-bot.login(require("./token.json"))
+import token from "./token.json"
+
+bot.login(token)
 	.then(() => {
-		console.log(`Logged in as ${bot.user.tag}`);
+		console.log(`Logged in as ${bot.user.tag}`)
 	})
-	.catch(error => {
-		console.error(error);
-	});
+	.catch( console.error() )

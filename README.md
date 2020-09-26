@@ -1,5 +1,12 @@
 # EmojiToRole
 A discord.js bot that assigns roles based on reactions to a message.
+It is inspired by Zira, a bot with similar functionality, but with a focus on ease of use.
+
+The main differences are:
+* no database required
+* static configuration
+* tiny code base
+* easy to maintain
 ## Features
 This bot offers two different modes of operation. The mode can be set independently for every message:
 1. mutually exclusive (disjoint)
@@ -16,6 +23,7 @@ This bot offers two different modes of operation. The mode can be set independen
 *Example: selecting alert roles*
 ## Setup
 The bot is exclusively configured through .json files.
+To run it simply install all dependencies (`npm i`) before using `npm run`.
 ### Token
 Provide your token to the token.json file.
 ### Configuration
