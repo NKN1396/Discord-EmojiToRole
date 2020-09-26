@@ -1,6 +1,6 @@
 # EmojiToRole
 A discord.js bot that assigns roles based on reactions to a message.
-It is inspired by Zira, a bot with similar functionality, but with a focus on ease of use.
+It is inspired by Zira, a bot with similar functionality, but instead with a focus on ease of use.
 
 The main differences are:
 * no database required
