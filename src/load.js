@@ -23,13 +23,13 @@ export default function(client, config) {
 			console.log("Fetching messages")
 			let debug_count_messagesFetched = 0
 			for (let { channel, message: message_id, reactions } of config) {
-				var message = await client.channels.get(channel).fetchMessage(message_id)
+				var message = await client.channels.cache.get(channel).messages.fetch(message_id)
 					.catch(error => console.error(error))
 				if (!message) continue
 				++debug_count_messagesFetched
 				for (var {emoji} of reactions) {
 					emoji = cleanEmojiDiscriminator(emoji)
-					var messageReaction = message.reactions.get(emoji)
+					var messageReaction = message.reactions.cache.get(emoji)
 					if (!messageReaction) {
 						await message.react(emoji)
 							.catch(console.error())
@@ -37,7 +37,7 @@ export default function(client, config) {
 					} else {
 						if (!messageReaction.me) {
 							//Fetch each reaction into cache to keep track of them
-							messageReaction.fetchUsers()
+							messageReaction.users.fetch({ limit: 50 })
 							await message.react(emoji)
 								.catch(console.error())
 						}

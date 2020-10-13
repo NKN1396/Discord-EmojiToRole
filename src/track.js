@@ -21,13 +21,13 @@ module.exports = function(client, config) {
 		.on("messageReactionAdd", (messageReaction, user) => {
 			//Bot should not react to its own reactions
 			if (user == client.user) return;
-			var member = messageReaction.message.guild.members.get(user.id);
+			var member = messageReaction.message.guild.members.cache.get(user.id);
 			var emojiDiscriminator = getEmojiDiscriminator(messageReaction.emoji);
 			(async () => {
 				for (var { channel, reactions, disjoint } of config) {
 					if (channel != messageReaction.message.channel.id) continue;
 					var rolesNew = [];
-					for(var role of member.roles.keys()){
+					for(var role of member.roles.cache.keys()){
 						rolesNew.push(role);
 					}
 					var rolesWhitelist = [];
@@ -47,9 +47,9 @@ module.exports = function(client, config) {
 					}
 					rolesNew.push.apply(rolesNew, rolesWhitelist);
 					//Make sure none of the roles on the "add" list get removed again
-					await member.setRoles(rolesNew)
+					await member.roles.set(rolesNew)
 						.catch(error => console.error(error));
-					if (disjoint) await messageReaction.remove(user)
+					if (disjoint) await messageReaction.users.remove(user)
 						.catch(error => console.error(error));
 				}
 			})();
@@ -58,7 +58,7 @@ module.exports = function(client, config) {
 		.on("messageReactionRemove", (messageReaction, user) => {
 			//Bot should not react to its own reactions.
 			if (user == client.user) return;
-			var member = messageReaction.message.guild.members.get(user.id);
+			var member = messageReaction.message.guild.members.cache.get(user.id);
 			var emojiDiscriminator = getEmojiDiscriminator(messageReaction.emoji);
 			(async () => {
 				for (var { disjoint, channel, reactions } of config) {
@@ -80,7 +80,7 @@ module.exports = function(client, config) {
 						//Make sure role that is about to be removed is not part of another emoji
 						(!rolesToKeep.includes(role)) &&
 						//Make sure member actually has role
-						(member.roles.get(role))
+						(member.roles.cache.get(role))
 					);
 					await member.removeRoles(rolesToRemove)
 						.catch(error => console.error(error));
