@@ -11,7 +11,7 @@
 	"dependencies": {
 		"discord.js": "^12.3.1",
 		"esm": "^3.2.25",
-		"lodash": "^4.17.20"
+		"lodash": "^4.17.21"
 	},
 	"engines": {
 		"node": "^13.2.0"
