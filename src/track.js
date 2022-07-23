@@ -19,7 +19,7 @@ function getEmojiDiscriminator(emoji) {
 module.exports = function(client, config) {
 	client
 		.on("messageReactionAdd", (messageReaction, user) => {
-			//Bot should not react to its own reactions
+			// * Bot should not react to its own reactions
 			if (user == client.user) return;
 			var member = messageReaction.message.guild.members.cache.get(user.id);
 			var emojiDiscriminator = getEmojiDiscriminator(messageReaction.emoji);
@@ -34,11 +34,11 @@ module.exports = function(client, config) {
 					var rolesBlacklist = [];
 					for (var { emoji, roles } of reactions) {
 						if (emojiDiscriminator == emoji) {
-							rolesWhitelist.push.apply(rolesWhitelist, roles); //Prototyping the push function, might be buggy
+							rolesWhitelist.push.apply(rolesWhitelist, roles); // * Prototyping the push function, might be buggy
 						}
 						rolesBlacklist.push.apply(rolesBlacklist, roles);
 					}
-					//Check to see if roles are handled mutually eclusive
+					// * Check to see if roles are handled mutually exclusive
 					if (disjoint) {
 						rolesNew = rolesNew.filter((role) =>
 							//Remove role if found on watchlist
@@ -46,7 +46,7 @@ module.exports = function(client, config) {
 						);
 					}
 					rolesNew.push.apply(rolesNew, rolesWhitelist);
-					//Make sure none of the roles on the "add" list get removed again
+					// * Make sure none of the roles on the "add" list get removed again
 					await member.roles.set(rolesNew)
 						.catch(error => console.error(error));
 					if (disjoint) await messageReaction.users.remove(user)
@@ -56,30 +56,30 @@ module.exports = function(client, config) {
 		})
 
 		.on("messageReactionRemove", (messageReaction, user) => {
-			//Bot should not react to its own reactions.
+			// * Bot should not react to its own reactions.
 			if (user == client.user) return;
 			var member = messageReaction.message.guild.members.cache.get(user.id);
 			var emojiDiscriminator = getEmojiDiscriminator(messageReaction.emoji);
 			(async () => {
 				for (var { disjoint, channel, reactions } of config) {
-					//Make sure we're not in "disjoint" mode
+					// * Make sure we're not in "disjoint" mode
 					if (disjoint) continue;
 					if (channel != messageReaction.message.channel.id) continue;
 					var rolesToKeep = [];
 					var rolesToRemove = [];
 					for (var { emoji, roles } of reactions) {
 						if (emojiDiscriminator == emoji) {
-							//Add to removal list
+							// * Add to removal list
 							rolesToRemove.push.apply(rolesToRemove, roles);
 						} else {
-							//List of all other roles that should be kept
+							// * List of all other roles that should be kept
 							rolesToKeep.push.apply(rolesToKeep, roles);
 						}
 					}
 					rolesToRemove.filter((role) =>
-						//Make sure role that is about to be removed is not part of another emoji
+						// * Make sure role that is about to be removed is not part of another emoji
 						(!rolesToKeep.includes(role)) &&
-						//Make sure member actually has role
+						// * Make sure member actually has role
 						(member.roles.cache.get(role))
 					);
 					await member.removeRoles(rolesToRemove)
