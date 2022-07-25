@@ -3,7 +3,7 @@ import { Client } from 'discord.js'
 
 // Internal dependencies
 import parseConfig from './src/restructureConfig.mjs'
-import fetchMessages from './src/load.js'
+import fetchMessages from './src/loadMessages.mjs'
 //import track from './src/track.js'
 
 // Configuration
