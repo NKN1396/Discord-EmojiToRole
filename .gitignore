@@ -4,3 +4,7 @@ node_modules
 #Private stuff
 config.mjs
 token.mjs
+
+#Private stuff (old)
+config.json
+token.json
