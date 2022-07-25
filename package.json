@@ -2,9 +2,9 @@
 	"name": "discord_emoji-to-role",
 	"version": "1.2.0",
 	"description": "A discord.js bot that assigns roles based on reactions to a message.",
-	"main": "index.js",
+	"main": "server.mjs",
 	"scripts": {
-		"run": "node -r esm index.js"
+		"start": "node .",
 		"lint": "standard",
 		"test": "npm run lint && npm run start"
 	},
@@ -12,7 +12,6 @@
 	"license": "MIT",
 	"dependencies": {
 		"discord.js": "^12.3.1",
-		"esm": "^3.2.25",
 		"lodash": "^4.17.21"
 	},
 	"engines": {
