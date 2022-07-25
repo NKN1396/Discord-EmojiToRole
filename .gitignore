@@ -3,4 +3,4 @@ node_modules
 
 #Private stuff
 config.json
-token.json
+token.mjs
