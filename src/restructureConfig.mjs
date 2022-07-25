@@ -11,8 +11,8 @@ export default function (config) {
     createReactions(reactions, reactionLibrary)
 
     const info = {
-      channel: channel,
-      disjoint: disjoint,
+      channel,
+      disjoint,
       reactions: reactionLibrary
     }
     messageScheme.set(message, info)
@@ -22,9 +22,9 @@ export default function (config) {
 }
 
 /**
- * 
- * @param {*} reactions 
- * @param {*} reactionLibrary 
+ *
+ * @param {*} reactions
+ * @param {*} reactionLibrary
  */
 function createReactions (reactions, reactionLibrary) {
   for (const reaction of reactions) {

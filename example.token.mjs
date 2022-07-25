@@ -1,1 +1,1 @@
-export default "Token goes here. Keep it secret!"
+export default 'Token goes here. Keep it secret!'
