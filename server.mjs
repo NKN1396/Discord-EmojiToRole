@@ -3,7 +3,6 @@ import { Client, GatewayIntentBits, Partials } from 'discord.js'
 
 // Internal dependencies
 import parseConfig from './src/restructureConfig.mjs'
-// import fetchMessages from './src/loadMessages.mjs'
 import trackReactions from './src/trackReactions.mjs'
 
 // Configuration
