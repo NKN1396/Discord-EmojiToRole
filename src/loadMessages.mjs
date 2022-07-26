@@ -1,19 +1,7 @@
 /**
- * Fixes possible errors in emoji strings by matching them to a pattern.
- * @param {String} emojiDiscriminator The string from the config file.
- * @returns {*} A proper emojiDiscriminator or null.
- */
-function cleanEmojiDiscriminator (emojiDiscriminator) {
-  const regEx = /[A-Za-z0-9_]+:[0-9]+/
-  const cleaned = regEx.exec(emojiDiscriminator)
-  if (cleaned) return cleaned[0]
-  return emojiDiscriminator
-}
-
-/**
- * Fetches all messages that need to be tracked into the cache. Makes sure each message is having the proper reactions attached.
- * @param {*} client The bot client.
- * @param {*} config The config file.
+ * Makes sure each message is having the proper reactions attached.
+ * @param {*} client The bot client
+ * @param {*} config The config scheme
  */
 export default function (client, config) {
   client
