@@ -16,13 +16,19 @@ This bot offers two different modes of operation. The mode can be set independen
 * Makes sure that the member can only ever pick one of the given choices.
 * Picking a different option removes the other.
 * Message reactions get removed immediately.
+
 *Example: choosing a team*
+
+![](docs/Disjoint.gif)
 
 ### Independent
 * Members can pick as many from the given choices as they like.
 * All roles are kept and reactions stay.
 * Removing the reaction causes the respective role(s) to be removed again.
+
 *Example: selecting alert roles*
+
+![](docs/Independent.gif)
 
 ## Setup
 To run it simply install all dependencies (`npm i`) before using `npm start`.
