@@ -21,9 +21,9 @@ async function setDisjointRoles (member, rolesToAdd, reactions, messageReaction)
    * 3. The set of roles that were requested by the member and should be added.
    *
    * This can be done the following way:
-   * 1. Acquire current member roles.
-   * 2. Subtract all roles that can be acquired.
-   * 3. Add role specific to reaction.
+   * 1. Acquire current member roles
+   * 2. Subtract all roles that could be acquired
+   * 3. Add roles according to current reaction
    */
 
   // Acquire current member roles
@@ -119,7 +119,7 @@ async function handleReactionAdd (messageReaction, user) {
   const messageScheme = config.get(messageReaction?.message?.id)
   if (messageScheme === undefined) return
 
-  // Acquire role(s) to grant
+  // Acquire roles to add
   const rolesToAdd = getReactionRoles(messageReaction, messageScheme)
   if (rolesToAdd === undefined) return
 
@@ -136,14 +136,14 @@ async function handleReactionAdd (messageReaction, user) {
     return
   }
 
-  // Add role(s)
+  // Add roles
   if (messageScheme.disjoint) {
     // Add one role, remove all other
     setDisjointRoles(member, rolesToAdd, messageScheme.reactions, messageReaction)
       .catch(console.error)
   } else {
     // We're in independent mode
-    // Only grant one set of roles
+    // Only add one set of roles
     addMemberRoles(member, rolesToAdd)
       .catch(error => {
         console.error(`Error adding roles for member ${member.displayName}. Is the bot maybe missing the "manage roles" permission?`)
