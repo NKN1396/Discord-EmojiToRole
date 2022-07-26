@@ -1,28 +1,82 @@
 let config
 
 /**
- *
- * @param {*} messageReaction
- * @param {*} reactions
+ * Set the roles in disjoint mode.
+ * @param {*} member The member that reacted
+ * @param {*} rolesToAdd An array of roles that should be granted to the member
+ * @param {*} reactions A map of possible reactions to this message (config.reactions)
+ * @param {*} messageReaction The messageReaction that prompted this function call
  */
-async function setDisjointRoles (messageReaction, reactions) {
-  let rolesToRemove = []
-  const rolesToAdd = []
+async function setDisjointRoles (member, rolesToAdd, reactions, messageReaction) {
+  /**
+   * This is going to be quite complicated, so I'll do some explaining here.
+   * We need to both add and remove certain roles in disjoint mode. This could
+   * be done in two seperate API calls, but that allows for illegal states and
+   * it's slower. Instead, we can set all roles in a single API call. However,
+   * this requires us to figure out everything beforehand.
+   *
+   * Essentially, we have three different groups of roles to account for:
+   * 1. The set of roles that are unrelated and we shouldn't touch.
+   * 2. The set of roles that we need to remove in disjoint mode.
+   * 3. The set of roles that were requested by the member and should be added.
+   *
+   * This can be done the following way:
+   * 1. Acquire current member roles.
+   * 2. Subtract all roles that can be acquired.
+   * 3. Add role specific to reaction.
+   */
 
-  for (const reaction of reactions) {
-    if (reaction.emoji === messageReaction.emoji.id) {
-      rolesToAdd.concat(reaction.roles)
-      continue
-    }
+  // Acquire current member roles
+  const roles = new Set(member.roles.cache.keys()) // Includes @everyone
 
-    rolesToRemove = [...new Set([...rolesToRemove, ...reaction.roles])]
+  // Acquire roles to remove
+  let rolesToRemove = Array.from(reactions.values())
+  rolesToRemove = rolesToRemove.flat()
+  for (const roleToRemove of rolesToRemove) {
+    roles.delete(roleToRemove)
   }
 
-  const newRoles = []
-  messageReaction.message.member.roles.set(newRoles)
+  // Acquire roles to add
+  for (const roleToAdd of rolesToAdd) {
+    roles.add(roleToAdd)
+  }
+
+  // Apply roles
+  const newRoles = Array.from(roles)
+  await member.roles.set(newRoles)
+    .catch(error => {
+      console.error(`Error setting roles for member ${member.displayName}. Is the bot maybe missing the "manage roles" permission?`)
+      throw error
+    })
+
+  // Remove reaction (instant feedback)
+  const user = member.user
+  await messageReaction.users.remove(user)
+    .catch(error => {
+      console.error(`Error removing reaction for member ${member.displayName}. Is the bot maybe missing the "manage messages" permission?`)
+      throw error
+    })
 }
 
-async function fetchMessageReactionMember(messageReaction, user) {
+/**
+ * Gets the roles associated with a specific reaction from a scheme
+ * @param {*} messageReaction The MessageReaction
+ * @param {*} messageScheme The scheme (config)
+ * @returns The roles associated with that MessageReaction
+ */
+function getReactionRoles (messageReaction, messageScheme) {
+  const emojiIdentifier = messageReaction.emoji.identifier
+  const reactionRoles = messageScheme.reactions.get(emojiIdentifier)
+  return reactionRoles
+}
+
+/**
+ * Gets the member that reacted to the message
+ * @param {*} messageReaction The MessageReaction
+ * @param {*} user The User
+ * @returns The member
+ */
+async function fetchMessageReactionMember (messageReaction, user) {
   const message = await messageReaction.message.fetch()
   const guild = await message.guild.fetch()
   return await guild.members.fetch(user.id)
@@ -42,12 +96,33 @@ async function handleReactionAdd (messageReaction, user) {
   const messageScheme = config.get(messageReaction?.message?.id)
   if (messageScheme === undefined) return
 
+  // Acquire role(s) to grant
+  const rolesToAdd = getReactionRoles(messageReaction, messageScheme)
+  if (rolesToAdd === undefined) return
+
+  // Acquire member
+  let member
+  try {
+    member = await fetchMessageReactionMember(messageReaction, user)
+  } catch (error) {
+    console.error(`Error fetching member of user ${user.tag}.`)
+    console.error(error)
+    return
+  }
+
+  // Add role(s)
   if (messageScheme.disjoint) {
     // Add one role, remove all other
-    setDisjointRoles(messageReaction, reactions)
+    setDisjointRoles(member, rolesToAdd, messageScheme.reactions, messageReaction)
+      .catch(console.error)
   } else {
-    // Only add one role
-    // member.add(reaction.roles)
+    // We're in independent mode
+    // Only grant one set of roles
+    member.roles.add(rolesToAdd)
+      .catch(error => {
+        console.error(`Error adding roles for member ${member.displayName}. Is the bot maybe missing the "manage roles" permission?`)
+        console.error(error)
+      })
   }
 }
 
@@ -69,14 +144,25 @@ async function handleReactionRemove (messageReaction, user) {
   // We're in independent mode
 
   // Acquire roles to remove
-  const emojiIdentifier = messageReaction.emoji.identifier
-  const roles = messageScheme.reactions.get(emojiIdentifier)
-  if (roles === null) return
+  const rolesToRemove = getReactionRoles(messageReaction, messageScheme)
+  if (rolesToRemove === undefined) return
+
+  // Fetch member
+  let member
+  try {
+    member = await fetchMessageReactionMember(messageReaction, user)
+  } catch (error) {
+    console.error(`Error fetching member of user ${user.tag}.`)
+    console.error(error)
+    return
+  }
 
   // Only remove one set of roles
-  const member = fetchMessageReactionMember(messageReaction, user)
-  member.roles.remove(roles)
-    .catch(console.error)
+  await member.roles.remove(rolesToRemove)
+    .catch(error => {
+      console.error(`Error removing roles for member ${member.displayName}. Is the bot maybe missing the "manage roles" permission?`)
+      console.error(error)
+    })
 }
 
 /**
@@ -87,50 +173,19 @@ async function handleReactionRemove (messageReaction, user) {
 export default function (client, _config) {
   // Prevent configuration from being empty
   if (_config === undefined) {
-    console.error('Configuration can not be empty.')
+    console.error('Configuration can not be empty')
     return
   }
 
   // Prevent tracker from being called twice on accident
   if (config !== undefined) {
-    console.error('The tracker has already been initiated and is currently working.')
+    console.error('The tracker has already been initiated and is currently working')
     return
   }
 
   // Start tracking
   config = _config
-  console.log("TRACKING!")
   client
     .on('messageReactionAdd', handleReactionAdd)
     .on('messageReactionRemove', handleReactionRemove)
-}
-
-async function newFunction () {
-  const member = messageReaction.message.guild.members.cache.get(user.id)
-  const emojiDiscriminator = getEmojiDiscriminator(messageReaction.emoji)
-
-  for (const { disjoint, channel, reactions } of config) {
-    // * Make sure we're not in "disjoint" mode
-    if (disjoint) continue
-    if (channel != messageReaction.message.channel.id) continue
-    const rolesToKeep = []
-    const rolesToRemove = []
-    for (const { emoji, roles } of reactions) {
-      if (emojiDiscriminator == emoji) {
-        // * Add to removal list
-        rolesToRemove.push.apply(rolesToRemove, roles)
-      } else {
-        // * List of all other roles that should be kept
-        rolesToKeep.push.apply(rolesToKeep, roles)
-      }
-    }
-    rolesToRemove.filter((role) =>
-    // * Make sure role that is about to be removed is not part of another emoji
-      (!rolesToKeep.includes(role)) &&
-      // * Make sure member actually has role
-      (member.roles.cache.get(role))
-    )
-    await member.removeRoles(rolesToRemove)
-      .catch(error => console.error(error))
-  }
 }
