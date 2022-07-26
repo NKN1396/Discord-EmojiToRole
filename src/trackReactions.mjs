@@ -158,6 +158,7 @@ async function handleReactionRemove (messageReaction, user) {
   }
 
   // Only remove one set of roles
+  console.log(rolesToRemove)
   await member.roles.remove(rolesToRemove)
     .catch(error => {
       console.error(`Error removing roles for member ${member.displayName}. Is the bot maybe missing the "manage roles" permission?`)
