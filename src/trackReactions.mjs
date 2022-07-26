@@ -112,7 +112,8 @@ async function addMemberRoles (member, rolesToAdd) {
 async function handleReactionAdd (messageReaction, user) {
   // Bot should never handle its own reactions
   // This might happen when the bot sets up a message initially
-  if (user.id === user.client.id) return
+  const myId = user.client.user.id
+  if (user.id === myId) return
 
   // Check if message is among the ones being tracked
   const messageScheme = config.get(messageReaction?.message?.id)
@@ -174,7 +175,8 @@ async function removeMemberRoles (member, rolesToRemove) {
  */
 async function handleReactionRemove (messageReaction, user) {
   // Bot should not react to its own reactions
-  if (user.id === user.client.id) return
+  const myId = user.client.user.id
+  if (user.id === myId) return
 
   // Check if message is among the ones being tracked
   const messageScheme = config.get(messageReaction?.message?.id)
