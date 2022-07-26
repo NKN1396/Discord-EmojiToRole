@@ -10,7 +10,6 @@ import trackReactions from './src/trackReactions.mjs'
 import CONFIG from './config.mjs'
 import TOKEN from './token.mjs'
 
-
 const bot = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.GuildMember, Partials.User]
@@ -27,4 +26,3 @@ bot.login(TOKEN)
     console.error('There was an error while trying to log in.')
     console.error(error)
   })
-
