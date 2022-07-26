@@ -76,10 +76,32 @@ function getReactionRoles (messageReaction, messageScheme) {
  * @param {*} user The User
  * @returns The member
  */
-async function fetchMessageReactionMember (messageReaction, user) {
+async function fetchMessageReactionMember (messageReaction, user, force = false) {
   const message = await messageReaction.message.fetch()
   const guild = await message.guild.fetch()
-  return await guild.members.fetch(user.id)
+  /**
+   * Force requesting the member from the API might be necessary, as the list of
+   * roles this member has might be incomplete. This leads to inconsistensies
+   * when calling GuildMemberRoleManager.set, GuildMemberRoleManager.add(Array)
+   * or GuildMemberRoleManager.remove(Array).
+   */
+  return await guild.members.fetch({ user, force })
+}
+
+/**
+ * Adds an array of one or more roles to a member. Requires proper handling of
+ * cache before calling.
+ * @param {*} member The GuildMember
+ * @param {*} rolesToAdd An array of Roles
+ */
+async function addMemberRoles (member, rolesToAdd) {
+  if (rolesToAdd.length === 1) {
+    // Add single role
+    await member.roles.add(rolesToAdd[0])
+    return
+  }
+  // Add multiple roles
+  await member.roles.remove(rolesToAdd)
 }
 
 /**
@@ -101,9 +123,12 @@ async function handleReactionAdd (messageReaction, user) {
   if (rolesToAdd === undefined) return
 
   // Acquire member
+  let forceFetch = false
+  if (rolesToAdd.length !== 1) forceFetch = true
+  if (messageScheme.disjoint) forceFetch = true
   let member
   try {
-    member = await fetchMessageReactionMember(messageReaction, user)
+    member = await fetchMessageReactionMember(messageReaction, user, forceFetch)
   } catch (error) {
     console.error(`Error fetching member of user ${user.tag}.`)
     console.error(error)
@@ -118,12 +143,28 @@ async function handleReactionAdd (messageReaction, user) {
   } else {
     // We're in independent mode
     // Only grant one set of roles
-    member.roles.add(rolesToAdd)
+    addMemberRoles(member, rolesToAdd)
       .catch(error => {
         console.error(`Error adding roles for member ${member.displayName}. Is the bot maybe missing the "manage roles" permission?`)
         console.error(error)
       })
   }
+}
+
+/**
+ * Removes an array of one or more roles to a member. Requires proper handling
+ * of cache before calling.
+ * @param {*} member The GuildMember
+ * @param {*} rolesToAdd An array of Roles
+ */
+async function removeMemberRoles (member, rolesToRemove) {
+  if (rolesToRemove.length === 1) {
+    // Remove single role
+    await member.roles.remove(rolesToRemove[0])
+    return
+  }
+  // Remove multiple roles
+  await member.roles.remove(rolesToRemove)
 }
 
 /**
@@ -148,9 +189,11 @@ async function handleReactionRemove (messageReaction, user) {
   if (rolesToRemove === undefined) return
 
   // Fetch member
+  let forceFetch = false
+  if (rolesToRemove.length !== 1) forceFetch = true
   let member
   try {
-    member = await fetchMessageReactionMember(messageReaction, user)
+    member = await fetchMessageReactionMember(messageReaction, user, forceFetch)
   } catch (error) {
     console.error(`Error fetching member of user ${user.tag}.`)
     console.error(error)
@@ -158,8 +201,7 @@ async function handleReactionRemove (messageReaction, user) {
   }
 
   // Only remove one set of roles
-  console.log(rolesToRemove)
-  await member.roles.remove(rolesToRemove)
+  removeMemberRoles(member, rolesToRemove)
     .catch(error => {
       console.error(`Error removing roles for member ${member.displayName}. Is the bot maybe missing the "manage roles" permission?`)
       console.error(error)
