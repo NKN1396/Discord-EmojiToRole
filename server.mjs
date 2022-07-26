@@ -33,7 +33,7 @@ bot.login(TOKEN)
   .then(() => {
     console.log(`Logged in as ${bot.user.tag}`)
 
-    // Check all messages if the bot has still reacted to them
+    // Check all messages for if the bot has still reacted to them
     checkMessages(bot, messageScheme)
   })
   .catch(error => {
