@@ -5,16 +5,11 @@ const config = [
     disjoint: false,
     reactions: [
       {
-        emoji: '🤔',
-        roles: [
-          '446783613439311882'
-        ]
-      },
-      {
-        emoji: 'b26:441046394493599764',
-        roles: [
-          '446783667084197910'
-        ]
+        emoji: '%F0%9F%A4%94', // Thinking emoji 🤔
+        roles: ['1001065452472111134']
+      }, {
+        emoji: 'SelenHappy:901432850396639232', // Custom guild emoji
+        roles: ['1001065583422492794']
       }
     ]
   }
