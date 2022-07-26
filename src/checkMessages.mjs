@@ -1,4 +1,21 @@
 /**
+ * Adds all reactions specified in the message scheme to the message.
+ * @param {*} messageScheme The message scheme
+ * @param {*} message The Message
+ * @param {*} messageId The ID of the Message
+ */
+async function addReactions (messageScheme, message, messageId) {
+  const emojis = messageScheme.reactions.keys()
+  for (const emoji of emojis) {
+    await message.react(emoji)
+      .catch(error => {
+        console.error(`Error reacting to message with ID ${messageId} with emoji ${emoji}. Has the limit of 20 reactions been reached?`)
+        console.error(error)
+      })
+  }
+}
+
+/**
  * Makes sure each message is having the proper reactions attached. This should only be called once the client ist ready.
  * @param {*} client The bot client
  * @param {*} config The config scheme
@@ -29,14 +46,7 @@ export default async function (client, config) {
     }
 
     // Add missing emojis
-    const emojis = messageScheme.reactions.keys()
-    for (const emoji of emojis) {
-      await message.react(emoji)
-        .catch(error => {
-          console.error(`Error reacting to message with ID ${messageId} with emoji ${emoji}.`)
-          console.error(error)
-        })
-    }
+    await addReactions(messageScheme, message, messageId)
   }
 
   console.log('Done checking messages')

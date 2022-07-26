@@ -11,9 +11,9 @@ async function setDisjointRoles (member, rolesToAdd, reactions, messageReaction)
   /**
    * This is going to be quite complicated, so I'll do some explaining here.
    * We need to both add and remove certain roles in disjoint mode. This could
-   * be done in two seperate API calls, but that allows for illegal states and
-   * it's slower. Instead, we can set all roles in a single API call. However,
-   * this requires us to figure out everything beforehand.
+   * be done in two seperate API calls, but that would allow for illegal states
+   * and it would be slower. Instead, we can set all roles in a single API call.
+   * However, this requires us to figure out everything beforehand.
    *
    * Essentially, we have three different groups of roles to account for:
    * 1. The set of roles that are unrelated and we shouldn't touch.
