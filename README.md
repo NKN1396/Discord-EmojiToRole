@@ -20,7 +20,7 @@ This bot offers two different modes of operation. The mode can be set independen
 ### Independent
 * Members can pick as many from the given choices as they like.
 * All roles are kept and reactions stay.
-* Removing the reaction causes the respective role(s) to be removed again  
+* Removing the reaction causes the respective role(s) to be removed again.
 *Example: selecting alert roles*
 
 ## Setup
